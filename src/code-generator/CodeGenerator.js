@@ -1,6 +1,7 @@
 import domEvents from './dom-events-to-record'
 import pptrActions from './pptr-actions'
 import Block from './Block'
+import keyCodes from './keyCodes'
 
 const importPuppeteer = `const puppeteer = require('puppeteer');\n`
 
@@ -24,6 +25,8 @@ export const defaults = {
   blankLinesBetweenBlocks: true,
   dataAttribute: ''
 }
+
+const keyCodesArray = Object.values(keyCodes)
 
 export default class CodeGenerator {
   constructor (options) {
@@ -166,9 +169,15 @@ export default class CodeGenerator {
 
   _handleKeyUp (keyCode) {
     const block = new Block(this._frameId)
+    let keyString
+    keyCodesArray.map(item => {
+      if (item.keyCode === keyCode) {
+        keyString = item.code
+      }
+    })
     block.addLine({
       type: domEvents.KEYUP,
-      value: `await ${this._frame}.keyboard.up('${keyCode}')`
+      value: `await ${this._frame}.keyboard.up('${keyString}')`
     })
     return block
   }
