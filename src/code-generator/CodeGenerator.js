@@ -92,10 +92,7 @@ export default class CodeGenerator {
 
       switch (action) {
         case 'keydown':
-          if (keyCode === 9) {
-            // tab key
-            this._blocks.push(this._handleKeyDown(selector, value, keyCode))
-          }
+          this._blocks.push(this._handleKeyDown(keyCode))
           break
         case 'keyup':
           this._blocks.push(this._handleKeyUp(keyCode))
@@ -168,11 +165,12 @@ export default class CodeGenerator {
     }
   }
 
-  _handleKeyDown (selector, value) {
+  _handleKeyDown (keyCode) {
     const block = new Block(this._frameId)
+    let keyString = keyCodeToKeyName(keyCode)
     block.addLine({
       type: domEvents.KEYDOWN,
-      value: `await ${this._frame}.type('${selector}', '${value}')`
+      value: `await ${this._frame}.keyboard.down('${keyString}')`
     })
     return block
   }
