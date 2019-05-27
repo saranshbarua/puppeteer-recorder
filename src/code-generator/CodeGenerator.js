@@ -28,6 +28,16 @@ export const defaults = {
 
 const keyCodesArray = Object.values(keyCodes)
 
+const keyCodeToKeyName = keyCode => {
+  let keyString
+  keyCodesArray.map(item => {
+    if (item.keyCode === keyCode) {
+      keyString = item.code
+    }
+  })
+  return keyString
+}
+
 export default class CodeGenerator {
   constructor (options) {
     this._options = Object.assign(defaults, options)
@@ -169,12 +179,7 @@ export default class CodeGenerator {
 
   _handleKeyUp (keyCode) {
     const block = new Block(this._frameId)
-    let keyString
-    keyCodesArray.map(item => {
-      if (item.keyCode === keyCode) {
-        keyString = item.code
-      }
-    })
+    let keyString = keyCodeToKeyName(keyCode)
     block.addLine({
       type: domEvents.KEYUP,
       value: `await ${this._frame}.keyboard.up('${keyString}')`
