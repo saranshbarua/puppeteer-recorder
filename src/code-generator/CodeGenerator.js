@@ -39,7 +39,7 @@ const keyCodeToKeyName = keyCode => {
 }
 
 export default class CodeGenerator {
-  constructor (options) {
+  constructor(options) {
     this._options = Object.assign(defaults, options)
     this._blocks = []
     this._frame = 'page'
@@ -49,7 +49,7 @@ export default class CodeGenerator {
     this._hasNavigation = false
   }
 
-  generate (events) {
+  generate(events) {
     return (
       importPuppeteer +
       this._getHeader() +
@@ -58,7 +58,7 @@ export default class CodeGenerator {
     )
   }
 
-  _getHeader () {
+  _getHeader() {
     console.debug(this._options)
     let hdr = this._options.wrapAsync ? wrappedHeader : header
     hdr = this._options.headless
@@ -67,11 +67,11 @@ export default class CodeGenerator {
     return hdr
   }
 
-  _getFooter () {
+  _getFooter() {
     return this._options.wrapAsync ? wrappedFooter : footer
   }
 
-  _parseEvents (events) {
+  _parseEvents(events) {
     console.debug(`generating code for ${events ? events.length : 0} events`)
     let result = ''
 
@@ -100,6 +100,12 @@ export default class CodeGenerator {
           break
         case 'click':
           this._blocks.push(this._handleClick(selector, events))
+          break
+        case 'mousedown':
+          this._blocks.push(this._handleMouseDown())
+          break
+        case 'mouseup':
+          this._blocks.push(this._handleMouseUp())
           break
         case 'mousemove':
           let x = coordinates.x
@@ -149,7 +155,7 @@ export default class CodeGenerator {
     return result
   }
 
-  _setFrames (frameId, frameUrl) {
+  _setFrames(frameId, frameUrl) {
     if (frameId && frameId !== 0) {
       this._frameId = frameId
       this._frame = `frame_${frameId}`
@@ -160,7 +166,7 @@ export default class CodeGenerator {
     }
   }
 
-  _postProcess () {
+  _postProcess() {
     // when events are recorded from different frames, we want to add a frame setter near the code that uses that frame
     if (Object.keys(this._allFrames).length > 0) {
       this._postProcessSetFrames()
@@ -171,7 +177,7 @@ export default class CodeGenerator {
     }
   }
 
-  _handleKeyDown (keyCode) {
+  _handleKeyDown(keyCode) {
     const block = new Block(this._frameId)
     let keyString = keyCodeToKeyName(keyCode)
     block.addLine({
@@ -181,7 +187,7 @@ export default class CodeGenerator {
     return block
   }
 
-  _handleKeyUp (keyCode) {
+  _handleKeyUp(keyCode) {
     const block = new Block(this._frameId)
     let keyString = keyCodeToKeyName(keyCode)
     block.addLine({
@@ -191,7 +197,25 @@ export default class CodeGenerator {
     return block
   }
 
-  _handleMouseMove (x, y) {
+  _handleMouseDown() {
+    const block = new Block(this._frameId)
+    block.addLine({
+      type: domEvents.MOUSEDOWN,
+      value: `await ${this._frame}.mouse.down()`
+    })
+    return block
+  }
+
+  _handleMouseUp() {
+    const block = new Block(this._frameId)
+    block.addLine({
+      type: domEvents.MOUSEUP,
+      value: `await ${this._frame}.mouse.up()`
+    })
+    return block
+  }
+
+  _handleMouseMove(x, y) {
     const block = new Block(this._frameId)
     block.addLine({
       type: domEvents.MOUSEMOVE,
@@ -200,7 +224,7 @@ export default class CodeGenerator {
     return block
   }
 
-  _handleClick (selector) {
+  _handleClick(selector) {
     const block = new Block(this._frameId)
     if (this._options.waitForSelectorOnClick) {
       block.addLine({
@@ -214,29 +238,29 @@ export default class CodeGenerator {
     })
     return block
   }
-  _handleChange (selector, value) {
+  _handleChange(selector, value) {
     return new Block(this._frameId, {
       type: domEvents.CHANGE,
       value: `await ${this._frame}.select('${selector}', '${value}')`
     })
   }
-  _handleGoto (href) {
+  _handleGoto(href) {
     return new Block(this._frameId, {
       type: pptrActions.GOTO,
       value: `await ${this._frame}.goto('${href}')`
     })
   }
 
-  _handleViewport (width, height) {
+  _handleViewport(width, height) {
     return new Block(this._frameId, {
       type: pptrActions.VIEWPORT,
       value: `await ${
         this._frame
-      }.setViewport({ width: ${width}, height: ${height} })`
+        }.setViewport({ width: ${width}, height: ${height} })`
     })
   }
 
-  _handleWaitForNavigation () {
+  _handleWaitForNavigation() {
     const block = new Block(this._frameId)
     if (this._options.waitForNavigation) {
       block.addLine({
@@ -247,7 +271,7 @@ export default class CodeGenerator {
     return block
   }
 
-  _postProcessSetFrames () {
+  _postProcessSetFrames() {
     for (let [i, block] of this._blocks.entries()) {
       const lines = block.getLines()
       for (let line of lines) {
@@ -257,7 +281,7 @@ export default class CodeGenerator {
         ) {
           const declaration = `const frame_${
             line.frameId
-          } = frames.find(f => f.url() === '${this._allFrames[line.frameId]}')`
+            } = frames.find(f => f.url() === '${this._allFrames[line.frameId]}')`
           this._blocks[i].addLineToTop({
             type: pptrActions.FRAME_SET,
             value: declaration
@@ -273,7 +297,7 @@ export default class CodeGenerator {
     }
   }
 
-  _postProcessAddBlankLines () {
+  _postProcessAddBlankLines() {
     let i = 0
     while (i <= this._blocks.length) {
       const blankLine = new Block()
