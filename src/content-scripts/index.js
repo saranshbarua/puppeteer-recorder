@@ -6,13 +6,13 @@ class EventRecorder {
     this.eventLog = []
     this.previousEvent = null
     this.dataAttribute = null
-    this.isTopFrame = (window.location === window.parent.location)
+    this.isTopFrame = window.location === window.parent.location
   }
 
   start () {
     // We need to check the existence of chrome for testing purposes
     if (chrome.storage && chrome.storage.local) {
-      chrome.storage.local.get(['options'], ({options}) => {
+      chrome.storage.local.get(['options'], ({ options }) => {
         const { dataAttribute } = options ? options.code : {}
         if (dataAttribute) {
           this.dataAttribute = dataAttribute
@@ -31,14 +31,24 @@ class EventRecorder {
       window.pptRecorderAddedControlListeners = true
     }
 
-    if (!window.document.pptRecorderAddedControlListeners && chrome.runtime && chrome.runtime.onMessage) {
+    if (
+      !window.document.pptRecorderAddedControlListeners &&
+      chrome.runtime &&
+      chrome.runtime.onMessage
+    ) {
       window.document.pptRecorderAddedControlListeners = true
     }
 
     if (this.isTopFrame) {
       this.sendMessage({ control: 'event-recorder-started' })
-      this.sendMessage({ control: 'get-current-url', href: window.location.href })
-      this.sendMessage({ control: 'get-viewport-size', coordinates: { width: window.innerWidth, height: window.innerHeight } })
+      this.sendMessage({
+        control: 'get-current-url',
+        href: window.location.href
+      })
+      this.sendMessage({
+        control: 'get-viewport-size',
+        coordinates: { width: window.innerWidth, height: window.innerHeight }
+      })
       console.debug('Puppeteer Recorder in-page EventRecorder started')
     }
   }
@@ -66,15 +76,18 @@ class EventRecorder {
   }
 
   recordEvent (e) {
-    if (this.previousEvent && this.previousEvent.timeStamp === e.timeStamp) return
+    if (this.previousEvent && this.previousEvent.timeStamp === e.timeStamp) { return }
     this.previousEvent = e
 
     // we explicitly catch any errors and swallow them, as none node-type events are also ingested.
     // for these events we cannot generate selectors, which is OK
     try {
-      const selector = this.dataAttribute && e.target.hasAttribute && e.target.hasAttribute(this.dataAttribute)
-        ? formatDataSelector(e.target, this.dataAttribute)
-        : finder(e.target, {seedMinLength: 5, optimizedMinLength: 10})
+      const selector =
+        this.dataAttribute &&
+        e.target.hasAttribute &&
+        e.target.hasAttribute(this.dataAttribute)
+          ? formatDataSelector(e.target, this.dataAttribute)
+          : finder(e.target, { seedMinLength: 5, optimizedMinLength: 10 })
 
       const msg = {
         selector: selector,
@@ -105,7 +118,9 @@ function getCoordinates (evt) {
     mousemove: true,
     mouseover: true
   }
-  return eventsWithCoordinates[evt.type] ? { x: evt.clientX, y: evt.clientY } : null
+  return eventsWithCoordinates[evt.type]
+    ? { x: evt.clientX, y: evt.clientY }
+    : null
 }
 
 function formatDataSelector (element, attribute) {

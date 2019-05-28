@@ -12,7 +12,6 @@ export default {
   LOAD: 'load',
   UNLOAD: 'unload'
 }
-
 // const events = [
 //    abort,
 //    afterprint,

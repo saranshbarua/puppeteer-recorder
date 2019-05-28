@@ -98,12 +98,6 @@ export default class CodeGenerator {
         case 'keyup':
           this._blocks.push(this._handleKeyUp(keyCode))
           break
-        case 'mousedown':
-          this._blocks.push(this._handleMouseDown())
-          break
-        case 'mouseup':
-          this._blocks.push(this._handleMouseUp())
-          break
         case 'click':
           this._blocks.push(this._handleClick(selector, events))
           break
@@ -193,24 +187,6 @@ export default class CodeGenerator {
     block.addLine({
       type: domEvents.KEYUP,
       value: `await ${this._frame}.keyboard.up('${keyString}')`
-    })
-    return block
-  }
-
-  _handleMouseDown () {
-    const block = new Block(this._frameId)
-    block.addLine({
-      type: domEvents.MOUSEDOWN,
-      value: `await ${this._frame}.mouse.down(options: {clickCount: 1})`
-    })
-    return block
-  }
-
-  _handleMouseUp () {
-    const block = new Block(this._frameId)
-    block.addLine({
-      type: domEvents.MOUSEUP,
-      value: `await ${this._frame}.mouse.up(options: {clickCount: 1})`
     })
     return block
   }

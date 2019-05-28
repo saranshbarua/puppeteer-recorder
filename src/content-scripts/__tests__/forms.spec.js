@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer'
 import _ from 'lodash'
-import {launchPuppeteerWithExtension, runDist} from '../../__e2e-tests__/helpers'
+import { launchPuppeteerWithExtension, runDist } from '../../__e2e-tests__/helpers'
 import { waitForAndGetEvents, cleanEventLog, startServer } from './helpers'
 
 let server
@@ -65,7 +65,7 @@ describe('forms', () => {
     await page.click('#radioChoice3')
     const eventLog = await waitForAndGetEvents(page, 2 + (2 * change))
     expect(eventLog[0].value).toEqual('radioChoice1')
-    expect(eventLog[2].value).toEqual('radioChoice3')
+    expect(eventLog).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'radioChoice3' })]))
   })
 
   test('it should record select and option elements', async () => {
@@ -80,6 +80,7 @@ describe('forms', () => {
     await page.click('#checkbox2')
     const eventLog = await waitForAndGetEvents(page, 2 + (2 * change))
     expect(eventLog[0].value).toEqual('checkbox1')
-    expect(eventLog[2].value).toEqual('checkbox2')
+    expect(eventLog).toEqual(expect.arrayContaining([expect.objectContaining({ value: 'checkbox2' })]))
+
   })
 })
