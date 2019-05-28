@@ -1,5 +1,8 @@
 export default {
+  MOUSEDOWN: 'mousedown',
+  MOUSEUP: 'mouseup',
   CLICK: 'click',
+  MOUSEMOVE: 'mousemove',
   DBLCLICK: 'dblclick',
   CHANGE: 'change',
   KEYDOWN: 'keydown',
